@@ -50,7 +50,7 @@ class Profile extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'first_name', 'last_name', 'birthdate', 'gender_id', 'created_at', 'updated_at'], 'required'],
+            [['user_id', 'first_name', 'last_name', 'birthdate', 'gender_id'], 'required'],
             [['user_id', 'gender_id', 'created_at', 'updated_at'], 'integer'],
             [['birthdate'], 'safe'],
             [['first_name', 'last_name'], 'string', 'max' => 255],
