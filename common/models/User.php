@@ -226,14 +226,6 @@ class User extends ActiveRecord implements IdentityInterface
     }
     
     /**
-     * Profile relationship
-     */
-    public function getProfile()
-    {
-        return $this->hasOne(Profile::className(), ['user_id' => 'id']);
-    }
-    
-    /**
      * get role relationship
      *
      */
@@ -319,8 +311,8 @@ class User extends ActiveRecord implements IdentityInterface
     }
     
     /**
-     * @getProfile
-    */
+     * Profile relationship
+     */
     public function getProfile()
     {
         return $this->hasOne(Profile::className(), ['user_id' => 'id']);

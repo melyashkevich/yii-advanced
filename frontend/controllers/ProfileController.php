@@ -8,6 +8,8 @@ use frontend\models\search\ProfileSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use common\models\PermissionHelpers;
+use common\models\RecordHelpers;
 
 /**
  * ProfileController implements the CRUD actions for Profile model.
@@ -20,6 +22,17 @@ class ProfileController extends Controller
     public function behaviors()
     {
         return [
+        	'access' => [
+        		'class' => \yii\filters\AccessControl::className(),
+        		'only' => ['index', 'view','create', 'update', 'delete'],
+        		'rules' => [
+        			[
+        				'actions' => ['index', 'view','create', 'update', 'delete'],
+        				'allow' => true,
+						'roles' => ['@'],
+					],
+   				],
+       		],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
@@ -35,13 +48,17 @@ class ProfileController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new ProfileSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+    	
+    	
+    	if ( $already_exists = RecordHelpers::userHas( 'profile' ) ) {
+    		return $this->render( 'view', [
+    			'model' => $this->findModel( $already_exists ),
+    		] );
+    	}
+    	else {
+    		return $this->redirect( ['create'] );
+    	}
+    	
     }
 
     /**
@@ -50,11 +67,19 @@ class ProfileController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionView()
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+    	
+    	
+    	if ( $already_exists = RecordHelpers::userHas( 'profile' ) ) {
+    		return $this->render( 'view', [
+    			'model' => $this->findModel( $already_exists ),
+    		]);
+    	}
+    	else {
+    		return $this->redirect( ['create'] );
+    	}
+    	
     }
 
     /**
@@ -65,14 +90,23 @@ class ProfileController extends Controller
     public function actionCreate()
     {
         $model = new Profile();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        
+        $model->user_id = \Yii::$app->user->identity->id;
+       
+        if ( $already_exists = RecordHelpers::userHas( 'profile' ) ) {
+        	return $this->render( 'view', [
+        		'model' => $this->findModel( $already_exists ),
+        	] );
+        }
+        elseif ( $model->load( Yii::$app->request->post() ) && $model->save() ) {
+        	return $this->redirect( ['view'] );
+        }
+        else {
+        	return $this->render( 'create', [
+        		'model' => $model,
+        	] );
         }
 
-        return $this->render('create', [
-            'model' => $model,
-        ]);
     }
 
     /**
@@ -82,17 +116,25 @@ class ProfileController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
+    public function actionUpdate( $id )
     {
-        $model = $this->findModel($id);
+    	
+    	if ( $model = Profile::find()->where( ['user_id' => Yii::$app->user->identity->id] )->one() ) {
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+    		if ( $model->load( Yii::$app->request->post() ) && $model->save() ) {
+    			return $this->redirect( ['view'] );
+			}
+			else {
+    			return $this->render( 'update', [
+    				'model' => $model,
+    			] );
+    		}
+    		
+    	}
+    	else {
+    		throw new NotFoundHttpException( 'No Such Profile.' );
+    	}
+    	
     }
 
     /**
@@ -102,11 +144,15 @@ class ProfileController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionDelete($id)
+    public function actionDelete( $id )
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+    	$model = Profile::find()
+    		->where( [ 'user_id' => Yii::$app->user->id] )
+    		->one();
+    	$this->findModel( $model->id )
+    		->delete();
+    	
+    	return $this->redirect( ['site/index'] );
     }
 
     /**
@@ -118,10 +164,12 @@ class ProfileController extends Controller
      */
     protected function findModel($id)
     {
-        if (($model = Profile::findOne($id)) !== null) {
+        
+    	if ( ( $model = Profile::findOne( $id ) ) !== null ) {
             return $model;
         }
 
-        throw new NotFoundHttpException('The requested page does not exist.');
+        throw new NotFoundHttpException( 'The requested page does not exist.' );
     }
+    
 }

@@ -1,43 +1,61 @@
 <?php
-
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use common\models\PermissionHelpers;
 
-/* @var $this yii\web\View */
-/* @var $model frontend\models\Profile */
-
-$this->title = $model->id;
+/**
+ * @var yii\web\View $this
+ * @var app\models\Profile $model
+ */
+$this->title = $model->user->username . "'s Profile";
 $this->params['breadcrumbs'][] = ['label' => 'Profiles', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
-\yii\web\YiiAsset::register($this);
 ?>
 <div class="profile-view">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
-
-    <?= DetailView::widget([
-        'model' => $model,
-        'attributes' => [
-            'id',
-            'user_id',
-            'first_name',
-            'last_name',
-            'birthdate',
-            'gender_id',
-            'created_at',
-            'updated_at',
-        ],
-    ]) ?>
-
+<h1><?= Html::encode($this->title) ?></h1>
+<p>
+<?Php
+//this is not necessary but in here as example
+if ( PermissionHelpers::userMustBeOwner( 'profile', $model->id ) ) {
+	echo Html::a(
+		'Update',
+		[
+			'update',
+			'id' => $model->id
+		],
+		[
+			'class' => 'btn btn-primary'
+		]
+	);
+} ?>
+<?= Html::a(
+		'Delete',
+		[
+			'delete',
+			'id' => $model->id
+		],
+		[
+			'class' => 'btn btn-danger',
+			'data' => [
+				'confirm' => Yii::t( 'app', 'Are you sure to delete this item?' ),
+				'method' => 'post',
+			],
+		]
+	)
+?>
+</p>
+<?= DetailView::widget( [
+	'model' => $model,
+	'attributes' => [
+		//'id',
+		'user.username',
+		'first_name',
+		'last_name',
+		'birthdate',
+		'gender.gender_name',
+		'created_at',
+		'updated_at',
+		//'user_id',
+	],
+] ) ?>
 </div>
