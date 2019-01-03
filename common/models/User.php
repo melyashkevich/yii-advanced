@@ -6,6 +6,8 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use yii\helpers\Url;
+use yii\helpers\Html;
 use yii\helpers\Security;
 use yii\helpers\ArrayHelper;
 use backend\models\Role;

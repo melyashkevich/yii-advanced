@@ -3,6 +3,7 @@ namespace common\models;
 
 use Yii;
 use yii\base\Model;
+use yii\web\NotFoundHttpException;
 
 /**
  * Login form
@@ -40,12 +41,16 @@ class LoginForm extends Model
      */
     public function validatePassword($attribute, $params)
     {
-        if (!$this->hasErrors()) {
+
+    	if (!$this->hasErrors()) {
             $user = $this->getUser();
+            
             if (!$user || !$user->validatePassword($this->password)) {
                 $this->addError($attribute, 'Incorrect username or password.');
             }
+            
         }
+        
     }
 
     /**
@@ -57,13 +62,13 @@ class LoginForm extends Model
     {
         
     	if (
-    			$this->validate() &&
-    			$this->getUser()->status_id === ValueHelpers::getStatusValue( 'Active' )
-    		) {
+    		$this->validate() &&
+    		$this->getUser()->status_id === ValueHelpers::getStatusValue( 'Active' )
+    	) {
             return Yii::$app->user->login(
-            		$this->getUser(),
-            		$this->rememberMe ? 3600 * 24 * 30 : 0
-            	);
+           		$this->getUser(),
+           		$this->rememberMe ? 3600 * 24 * 30 : 0
+           	);
         }
         
         return false;
@@ -78,16 +83,19 @@ class LoginForm extends Model
      */
     public function loginAdmin()
     {
+    	Yii::info( '11111' );
+    	Yii::info( $this->validate() );
+    	Yii::info( '22222' );
     	
     	if (
-    			$this->validate() &&
-    			$this->getUser()->role_id >= ValueHelpers::getRoleValue('Admin') &&
-    			$this->getUser()->status_id == ValueHelpers::getStatusValue('Active')
-    		) {
-    			return Yii::$app->user->login(
-    					$this->getUser(),
-    					$this->rememberMe ? 3600 * 24 * 30 : 0
-    					);
+    		$this->validate() &&
+    		$this->getUser()->role_id >= ValueHelpers::getRoleValue('Admin') &&
+    		$this->getUser()->status_id == ValueHelpers::getStatusValue('Active')
+    	) {
+    		return Yii::$app->user->login(
+    			$this->getUser(),
+    			$this->rememberMe ? 3600 * 24 * 30 : 0
+    		);
     	}
     	
     	throw new NotFoundHttpException('You Shall Not Pass.');
