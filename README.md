@@ -1,4 +1,4 @@
-<p align="center" data-test="4">
+<p align="center" data-test="3">
     <a href="https://github.com/yiisoft" target="_blank">
         <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
     </a>
